@@ -5,8 +5,9 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.stereotype.Component;
 
 import com.example.inventory.dto.events.InventoryAllocatedEvent;
+import com.example.order.dto.converter.CustomerOrderDTOConverter;
 import com.example.order.dto.converter.OrderLineStatusUpdateDTOConverter;
-import com.example.order.dto.events.OrderDownloadEvent;
+import com.example.order.dto.events.CustomerOrderCreatedEvent;
 import com.example.order.service.OrderService;
 import com.example.order.streams.OrderStreams;
 
@@ -18,20 +19,20 @@ public class OrderListener {
 	@Autowired
 	OrderService orderService;
 
-	@StreamListener(target=OrderStreams.ORDERS_INPUT, condition = "headers['eventName']=='OrderDownloadEvent'")
-	public void handleNewOrder(OrderDownloadEvent orderDownloadEvent) { // OrderCreationRequestDTO
+	@StreamListener(target=OrderStreams.CUSTOMER_ORDERS_OUTPUT, condition = "headers['eventName']=='CustomerOrderCreatedEvent'")
+	public void handleNewOrder(CustomerOrderCreatedEvent customerOrderCreatedEvent) { // OrderCreationRequestDTO
 																					// orderCreationRequestDTO) {
-		log.info("Received OrderCreationRequest Msg: {}" + ": at :" + new java.util.Date(), orderDownloadEvent);
+		log.info("Received CustomerOrderCreatedEvent Msg: {}" + ": at :" + new java.util.Date(), customerOrderCreatedEvent);
 		long startTime = System.currentTimeMillis();
 		try {
-			orderService.createOrder(orderDownloadEvent.getOrderCreationRequestDTO());
+			orderService.createOrder(CustomerOrderDTOConverter.getOrderCreationRequestDTO(customerOrderCreatedEvent));
 			long endTime = System.currentTimeMillis();
-			log.info("Completed OrderCreationRequest for : " + orderDownloadEvent + ": at :" + new java.util.Date()
+			log.info("Completed CustomerOrderCreatedEvent for : " + customerOrderCreatedEvent + ": at :" + new java.util.Date()
 					+ " : total time:" + (endTime - startTime) / 1000.00 + " secs");
 		} catch (Exception e) {
 			e.printStackTrace();
 			long endTime = System.currentTimeMillis();
-			log.error("Error Completing OrderCreationRequest for : " + orderDownloadEvent + ": at :"
+			log.error("Error Completing CustomerOrderCreatedEvent for : " + customerOrderCreatedEvent + ": at :"
 					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs", e);
 		}
 	}

@@ -35,15 +35,4 @@ public class EventPublisher {
 				.setHeaders(msgHdrAccessor)
 				.build());
 	}
-	
-	public void send(Object obj) {
-		log.info("Sending Msg {}", obj);
-		MessageChannel messageChannel = orderStreams.inboundOrders();
-		MessageHeaderAccessor msgHdrAccessor = new MessageHeaderAccessor();
-		//msgHdrAccessor.copyHeadersIfAbsent(event.getHeaderMap());
-		messageChannel.send(MessageBuilder.withPayload(obj)
-				.setHeader(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON)
-				.setHeaders(msgHdrAccessor)
-				.build());
-	}	
 }
