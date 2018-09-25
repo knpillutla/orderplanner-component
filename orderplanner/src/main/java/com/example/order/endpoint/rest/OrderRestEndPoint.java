@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.order.dto.events.OrderCreationFailedEvent;
+import com.example.order.dto.events.OrderFulfillmentFailedEvent;
 import com.example.order.dto.events.OrderUpdateFailedEvent;
 import com.example.order.dto.requests.OrderCreationRequestDTO;
+import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.example.order.dto.requests.OrderUpdateRequestDTO;
 import com.example.order.service.OrderService;
 
@@ -78,4 +80,14 @@ public class OrderRestEndPoint {
 		log.info("Completed Order Create request for : " + orderCreationReq.toString() + ": at :" + new java.util.Date() + " : total time:" + (endTime-startTime)/1000.00 + " secs");
 		return resEntity;
 	}	
+	
+	@PostMapping("/{busName}/{locnNbr}")
+	public ResponseEntity startOrderFulfillment(@PathVariable("busName") String busName, @PathVariable("locnNbr") Integer locnNbr, @RequestBody OrderFulfillmentRequestDTO req) throws IOException {
+		try {
+			return ResponseEntity.ok(orderService.startOrderFulfillment(req));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.badRequest().body(new OrderFulfillmentFailedEvent(req, "Error Occured while processing request:" + e.getMessage()));
+		}
+	}		
 }

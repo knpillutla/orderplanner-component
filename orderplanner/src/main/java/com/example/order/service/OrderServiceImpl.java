@@ -1,6 +1,9 @@
 package com.example.order.service;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +19,14 @@ import com.example.order.dto.events.OrderAllocatedEvent;
 import com.example.order.dto.events.OrderCreatedEvent;
 import com.example.order.dto.events.OrderCreationFailedEvent;
 import com.example.order.dto.events.OrderLineAllocationFailedEvent;
+import com.example.order.dto.events.OrderPlannedEvent;
 import com.example.order.dto.events.OrderUpdateFailedEvent;
 import com.example.order.dto.requests.OrderCreationRequestDTO;
+import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.example.order.dto.requests.OrderLineStatusUpdateRequestDTO;
 import com.example.order.dto.requests.OrderUpdateRequestDTO;
 import com.example.order.dto.responses.OrderDTO;
+import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,8 +46,8 @@ public class OrderServiceImpl implements OrderService {
 	OrderDTOConverter orderDTOConverter;
 
 	public enum OrderStatus {
-		CREATED(100), READY(110), ALLOCATED(120), PARTIALLY_ALLOCATED(121), PICKED(130), PACKED(140), SHIPPED(150),
-		SHORTED(160), CANCELLED(199);
+		CREATED(100), READY(110), WAVED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PACKED(150), SHIPPED(160),
+		SHORTED(170), CANCELLED(199);
 		OrderStatus(Integer statCode) {
 			this.statCode = statCode;
 		}
@@ -160,4 +166,95 @@ public class OrderServiceImpl implements OrderService {
 		}
 		return true;
 	}
+	
+	@Override
+	public OrderFulfillmentResponseDTO startOrderFulfillment(OrderFulfillmentRequestDTO orderFulfillmentReq) {
+		OrderFulfillmentResponseDTO responseDTO = new OrderFulfillmentResponseDTO(orderFulfillmentReq);
+		List<OrderDTO> orderDTOList= new ArrayList();
+		List orderFailureDTOList= new ArrayList();
+		
+		String pattern = "yyyyMMddhhmmss";
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern); 
+		String batchNbr = simpleDateFormat.format(new Date());
+		String userId = orderFulfillmentReq.getUserId();
+		if(orderFulfillmentReq.getOrderIdList() !=null && orderFulfillmentReq.getOrderIdList().size()>0) {
+			// created pick list based on order ids
+			// get all the orderids
+			for(Long orderId:orderFulfillmentReq.getOrderIdList()) {
+				Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderId(orderFulfillmentReq.getBusName(), orderFulfillmentReq.getLocnNbr(), orderId);
+				OrderDTO orderDTO;
+				try {
+					orderDTO = startOrderFulfillment(batchNbr, orderEntity, userId);
+					orderDTOList.add(orderDTO);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					orderFailureDTOList.add(orderId);
+				}
+			}
+		}
+		else
+		if(orderFulfillmentReq.getOrderNbrList() !=null && orderFulfillmentReq.getOrderNbrList().size()>0) {
+			// created pick list based on order Nbrs
+			// get all the orderids
+			for(String orderNbr:orderFulfillmentReq.getOrderNbrList()) {
+				Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderNbr(orderFulfillmentReq.getBusName(), orderFulfillmentReq.getLocnNbr(), orderNbr);
+				OrderDTO orderDTO;
+				try {
+					orderDTO = startOrderFulfillment(batchNbr, orderEntity, userId);
+					orderDTOList.add(orderDTO);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					orderFailureDTOList.add(orderNbr);
+				}
+			}
+		}
+		else {
+			// create pick list based on number of orders
+			int numOfOrders = orderFulfillmentReq.getNumOfOrders();
+			if(numOfOrders==0) {
+				numOfOrders = 10;
+			}
+			
+			String orderSelectionOption = orderFulfillmentReq.getOrderSelectionOption();
+			if(orderSelectionOption.equalsIgnoreCase("byAreaZoneAisle")) {
+				
+			}
+			else
+			if(orderSelectionOption.equalsIgnoreCase("deliveryType")) {
+				
+			}
+			log.info("No options selected, using num of orders to fetch from DB" + numOfOrders);
+			List<Order> orderEntityList = orderDAO.findByBusNameAndLocnNbrOrderByOrderId(orderFulfillmentReq.getBusName(), orderFulfillmentReq.getLocnNbr());
+			log.info("Retreived " + orderEntityList.size() + "from db");
+			OrderDTO orderDTO;
+			for(Order orderEntity:orderEntityList) {
+				try {
+					orderDTO = startOrderFulfillment(batchNbr, orderEntity, userId);
+					orderDTOList.add(orderDTO);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		responseDTO.setBatchNbr(batchNbr);
+		responseDTO.setSuccessList(orderDTOList);
+		responseDTO.setFailureList(orderFailureDTOList);
+		return responseDTO;
+	}
+	
+	@Transactional
+	public OrderDTO startOrderFulfillment(String batchNbr, Order orderEntity, String userId) throws Exception{
+		orderEntity.setStatCode(OrderStatus.WAVED.getStatCode());
+		orderEntity.setBatchNbr(batchNbr);
+		orderEntity.setUpdatedDttm(new java.util.Date());
+		orderEntity.setUpdatedBy(userId);
+		orderEntity = orderDAO.save(orderEntity);
+		OrderDTO  orderDTO = orderDTOConverter.getOrderDTO(orderEntity);
+		eventPublisher.publish(new OrderPlannedEvent(orderDTO));
+		return orderDTO;
+	}
+	
 }
