@@ -71,7 +71,7 @@ public class OrderDTOConverter {
 		OrderLineDTO orderLineDTO = new OrderLineDTO(orderLine.getId(), orderLine.getLocnNbr(), orderLine.getOrder().getId(),
 				orderLine.getOrderLineNbr(), orderLine.getItemBrcd(), orderLine.getOrigOrderQty(), orderLine.getOrderQty(),
 				orderLine.getCancelledQty(), orderLine.getShortQty(), orderLine.getPickedQty(),
-				orderLine.getPackedQty(), orderLine.getShippedQty(), orderLine.getStatCode(), orderLine.getOlpn(),
+				orderLine.getPackedQty(), orderLine.getShippedQty(), orderLine.getStatCode(), orderLine.getPackageNbr(),
 				orderLine.getSource(), orderLine.getTransactionName(), orderLine.getRefField1(),
 				orderLine.getRefField2(), orderLine.getUpdatedDttm(), orderLine.getUpdatedBy());
 		return orderLineDTO;

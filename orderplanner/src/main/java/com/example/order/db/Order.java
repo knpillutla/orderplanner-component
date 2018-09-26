@@ -55,6 +55,9 @@ public class Order  implements Serializable{
 	@Column(name="BATCH_NBR")
 	String batchNbr;
 
+	@Column(name="PACKAGE_NBR")
+	String packageNbr;
+
 	@Column(name="ORDER_NBR")
 	String orderNbr;
 

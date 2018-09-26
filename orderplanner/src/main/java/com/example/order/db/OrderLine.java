@@ -67,9 +67,12 @@ public class OrderLine  implements Serializable{
 	@Column(name="STAT_CODE")
 	Integer statCode;
 
-	@Column(name="OLPN")
-	String olpn;
+	@Column(name="ORIG_PACKAGE_NBR")
+	String origPackageNbr;
 	
+	@Column(name="PACKAGE_NBR")
+	String packageNbr;
+
 	@Column(name="SOURCE")
 	String source;
 
