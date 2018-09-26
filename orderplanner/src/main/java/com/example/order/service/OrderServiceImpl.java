@@ -46,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
 	OrderDTOConverter orderDTOConverter;
 
 	public enum OrderStatus {
-		CREATED(100), READY(110), WAVED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PACKED(150), SHIPPED(160),
+		CREATED(100), READY(110), RELEASED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PACKED(150), SHIPPED(160),
 		SHORTED(170), CANCELLED(199);
 		OrderStatus(Integer statCode) {
 			this.statCode = statCode;
@@ -106,6 +106,7 @@ public class OrderServiceImpl implements OrderService {
 			Order savedOrderObj = orderDAO.save(order);
 			orderResponseDTO = orderDTOConverter.getOrderDTO(savedOrderObj);
 			eventPublisher.publish(new OrderCreatedEvent(orderResponseDTO));
+			this.startOrderFulfillment(order.getOrderNbr(), savedOrderObj, savedOrderObj.getUpdatedBy());
 		} catch (Exception ex) {
 			log.error("Created Order Error:" + ex.getMessage(), ex);
 			eventPublisher.publish(
@@ -247,7 +248,7 @@ public class OrderServiceImpl implements OrderService {
 	
 	@Transactional
 	public OrderDTO startOrderFulfillment(String batchNbr, Order orderEntity, String userId) throws Exception{
-		orderEntity.setStatCode(OrderStatus.WAVED.getStatCode());
+		orderEntity.setStatCode(OrderStatus.RELEASED.getStatCode());
 		orderEntity.setBatchNbr(batchNbr);
 		orderEntity.setUpdatedDttm(new java.util.Date());
 		orderEntity.setUpdatedBy(userId);
