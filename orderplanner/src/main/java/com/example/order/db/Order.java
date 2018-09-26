@@ -61,6 +61,9 @@ public class Order  implements Serializable{
 	@Column(name="ORDER_NBR")
 	String orderNbr;
 
+	@Column(name="ORDER_TYPE")
+	String orderType;
+
 	@Column(name="STAT_CODE")
 	Integer statCode;
 

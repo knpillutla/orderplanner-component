@@ -73,7 +73,22 @@ public class OrderLine  implements Serializable{
 	@Column(name="PACKAGE_NBR")
 	String packageNbr;
 
-	@Column(name="SOURCE")
+	@Column(name="ITEM_WIDTH")
+    double itemWidth;
+    
+    @Column(name="ITEM_HEIGHT")
+    double itemHeight;
+    
+    @Column(name="ITEM_LENGTH")
+    double itemLength;
+    
+    @Column(name="ITEM_UNIT_WT")
+    double itemUnitWt;
+    
+    @Column(name="ITEM_UNIT_VOL")
+    double itemUnitVol;
+
+    @Column(name="SOURCE")
 	String source;
 
 	@Column(name="TRANSACTION_NAME")

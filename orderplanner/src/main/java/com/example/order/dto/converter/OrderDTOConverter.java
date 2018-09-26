@@ -82,7 +82,9 @@ public class OrderDTOConverter {
 				orderLine.getShortQty(), orderLine.getPickedQty(), orderLine.getPackedQty(), orderLine.getShippedQty(),
 				orderLine.getStatCode(), orderLine.getPackageNbr(), orderLine.getSource(),
 				orderLine.getTransactionName(), orderLine.getRefField1(), orderLine.getRefField2(),
-				orderLine.getUpdatedDttm(), orderLine.getUpdatedBy());
+				orderLine.getUpdatedDttm(), orderLine.getUpdatedBy(), orderLine.getItemWidth(),
+				orderLine.getItemHeight(), orderLine.getItemLength(), orderLine.getItemUnitWt(),
+				orderLine.getItemUnitVol());
 		return orderLineDTO;
 	}
 
