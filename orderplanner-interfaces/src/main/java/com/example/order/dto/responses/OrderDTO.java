@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.example.inventory.dto.BaseDTO;
+import com.example.order.dto.BaseDTO;
 import com.example.order.dto.events.ExceptionEvent;
 import com.example.order.dto.requests.OrderLineCreationRequestDTO;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -46,6 +46,18 @@ public class OrderDTO  extends BaseDTO implements Serializable{
 	String refField2;
 	Date updatedDttm;
 	String updatedBy;
+    String delFirstName;
+    String delLastName;
+    String delMiddleName;
+    String delAddr1;
+    String delAddr2;
+    String delAddr3;
+    String delCity;
+    String delState;
+    String delCountry;
+    String delZipcode;
+    String delPhoneNbr;
+	
 	List<OrderLineDTO> orderLines = new ArrayList<>();
 	
 

@@ -82,6 +82,39 @@ public class Order  implements Serializable{
 	@Column(name="GIFT_MSG")
 	String giftMsg;
 
+	@Column(name="DEL_FIRST_NAME")
+    String delFirstName;
+
+	@Column(name="DEL_LAST_NAME")
+    String delLastName;
+	
+	@Column(name="DEL_MIDDLE_NAME")
+    String delMiddleName;
+	
+	@Column(name="DEL_ADDR_1")
+    String delAddr1;
+	
+	@Column(name="DEL_ADDR_2")
+    String delAddr2;
+	
+	@Column(name="DEL_ADDR_3")
+    String delAddr3;
+	
+	@Column(name="DEL_CITY")
+    String delCity;
+	
+	@Column(name="DEL_STATE")
+    String delState;
+	
+	@Column(name="DEL_COUNTRY")
+    String delCountry;
+	
+	@Column(name="DEL_ZIPCODE")
+    String delZipcode;
+	
+	@Column(name="DEL_PHONE_NBR")
+    String delPhoneNbr;
+	
 	@Column(name="SOURCE")
 	String source;
 

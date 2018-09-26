@@ -1,4 +1,4 @@
-package com.example.inventory.dto;
+package com.example.order.dto;
 
 import java.io.Serializable;
 import java.util.HashMap;

@@ -47,6 +47,7 @@ CREATE TABLE ORDERS
 	DEL_CITY character varying(50),
 	DEL_STATE character varying(50),
 	DEL_COUNTRY character varying(50),
+	DEL_ZIPCODE character varying(15),
 	DEL_PHONE_NBR character varying(50),
 	REF_FIELD_1  character varying(50),
 	REF_FIELD_2  character varying(50),

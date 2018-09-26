@@ -2,7 +2,7 @@ package com.example.order.dto.requests;
 
 import java.util.Date;
 
-import com.example.inventory.dto.BaseDTO;
+import com.example.order.dto.BaseDTO;
 import com.example.order.dto.events.ExceptionEvent;
 import com.example.order.dto.events.OrderCreatedEvent;
 import com.example.order.dto.responses.OrderDTO;

@@ -2,7 +2,7 @@ package com.example.order.dto.responses;
 
 import java.util.List;
 
-import com.example.inventory.dto.BaseDTO;
+import com.example.order.dto.BaseDTO;
 import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
