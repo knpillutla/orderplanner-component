@@ -13,7 +13,8 @@ public interface OrderService {
 	public OrderDTO findById(String busName, Integer locnNbr, Long id) throws Exception;
 	public OrderDTO createOrder(OrderCreationRequestDTO orderCreationReq) throws Exception;
 	public OrderDTO updateOrder(OrderUpdateRequestDTO orderUpdRequest) throws Exception;
-	public OrderDTO updateOrderLineStatusToReserved(OrderLineStatusUpdateRequestDTO orderStatusUpdReq) throws Exception;
+	public OrderDTO updateOrderLineStatusToReserved(OrderLineStatusUpdateRequestDTO orderLineStatusUpdReq) throws Exception;
+	public OrderDTO updateOrderLineStatusToPicked(OrderLineStatusUpdateRequestDTO orderLineStatusUpdReq) throws Exception;
 	public OrderFulfillmentResponseDTO startOrderFulfillment(OrderFulfillmentRequestDTO orderFulfillmentReq);
 	OrderDTO updateRoutingCompleted(String busName, Integer locnNbr, Long orderId) throws Exception;
 }

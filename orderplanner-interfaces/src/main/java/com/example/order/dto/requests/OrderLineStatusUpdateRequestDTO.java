@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 public class OrderLineStatusUpdateRequestDTO {
 	Long id;
 	Long orderId;
+	Integer orderLineNbr;
 	String busName;
 	Integer locnNbr;
 	String orderNbr;

@@ -12,7 +12,7 @@ public class OrderLineStatusUpdateDTOConverter {
 
 	public static OrderLineStatusUpdateRequestDTO getOrderLineStatusUpdateDTO(InventoryAllocatedEvent inventoryAllocatedEvent) {
 		OrderLineStatusUpdateRequestDTO req = new OrderLineStatusUpdateRequestDTO(inventoryAllocatedEvent.getOrderLineId(), inventoryAllocatedEvent.getOrderId(),
-				inventoryAllocatedEvent.getBusName(), inventoryAllocatedEvent.getLocnNbr(), inventoryAllocatedEvent.getOrderNbr(), "", "",
+				inventoryAllocatedEvent.getOrderLineNbr(), inventoryAllocatedEvent.getBusName(), inventoryAllocatedEvent.getLocnNbr(), inventoryAllocatedEvent.getOrderNbr(), "", "",
 				inventoryAllocatedEvent.getItemBrcd(), inventoryAllocatedEvent.getBusUnit(), inventoryAllocatedEvent.getQty(), 
 				OrderServiceImpl.OrderLineStatus.ALLOCATED.getStatCode());
 		return req;

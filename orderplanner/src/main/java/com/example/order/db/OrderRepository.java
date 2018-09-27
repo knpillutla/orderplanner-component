@@ -2,9 +2,12 @@ package com.example.order.db;
 
 import java.util.List;
 
+import javax.persistence.QueryHint;
+
 import org.hibernate.annotations.BatchSize;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -29,6 +32,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>{
 	public Order findByBusNameAndLocnNbrAndOrderId(@Param("busName") String busName, @Param("locnNbr") Integer locnNbr, @Param("orderId") Long orderId);
 	
 	@Query("select o from Order o where o.busName=:busName and o.locnNbr=:locnNbr and o.statCode<=:statCode order by o.id")
-	@BatchSize(size = 10)
+	@QueryHints(@QueryHint(name = "JDBC_MAX_ROWS", value = "10"))
 	public List<Order> findByBusNameAndLocnNbrAndStatCodeOrderByOrderId(@Param("busName") String busName, @Param("locnNbr") Integer locnNbr, @Param("statCode") Integer statCode);
 }
