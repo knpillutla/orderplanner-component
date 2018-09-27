@@ -26,6 +26,11 @@
 		</dependency>
 		<dependency>
 		    <groupId>com.example.wms</groupId>
+		    <artifactId>shipping-interfaces</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.example.wms</groupId>
 		    <artifactId>inventory-interfaces</artifactId>
 		    <version>0.0.1-SNAPSHOT</version>
 		</dependency>

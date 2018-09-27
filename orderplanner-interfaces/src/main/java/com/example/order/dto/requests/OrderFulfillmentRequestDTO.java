@@ -31,4 +31,7 @@ public class OrderFulfillmentRequestDTO  extends BaseDTO{
 	Integer numOfOrders;
 	String orderSelectionOption; // by area/zone/aisle/pick density/deliveryType(prioriry vs non priority orders)/order date time/ship date time
 	String printOption; //byOrder, byPickPathSequence (will not be grouped by order), delivery type(express orders etc)
+	boolean smallStoreMode;
+	boolean warehouseMode;
+	boolean storeMode;
 }

@@ -11,6 +11,7 @@ public interface OrderStreams {
     public String ORDERS_OUTPUT = "orders-out";
     public String INVENTORY_OUTPUT="inventory-out";
     public String PICK_OUTPUT="pick-out";
+    public String SHIP_OUTPUT="ship-out";
     
     @Input(CUSTOMER_ORDERS_OUTPUT)
     public SubscribableChannel inboundCustomerOrders();
@@ -20,6 +21,9 @@ public interface OrderStreams {
 
     @Input(PICK_OUTPUT)
     public SubscribableChannel outboundPick();
+
+    @Input(SHIP_OUTPUT)
+    public SubscribableChannel outboundShip();
 
     @Output(ORDERS_OUTPUT)
     public MessageChannel outboundOrders();

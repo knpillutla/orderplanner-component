@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.order.service.OrderServiceImpl.OrderStatus;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>{
 
@@ -26,7 +28,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>{
 	@Query("select o from Order o where o.busName=:busName and o.locnNbr=:locnNbr and o.id=:orderId")
 	public Order findByBusNameAndLocnNbrAndOrderId(@Param("busName") String busName, @Param("locnNbr") Integer locnNbr, @Param("orderId") Long orderId);
 	
-	@Query("select o from Order o where o.busName=:busName and o.locnNbr=:locnNbr order by o.id")
+	@Query("select o from Order o where o.busName=:busName and o.locnNbr=:locnNbr and o.statCode<=:statCode order by o.id")
 	@BatchSize(size = 10)
-	public List<Order> findByBusNameAndLocnNbrOrderByOrderId(@Param("busName") String busName, @Param("locnNbr") Integer locnNbr);
+	public List<Order> findByBusNameAndLocnNbrAndStatCodeOrderByOrderId(@Param("busName") String busName, @Param("locnNbr") Integer locnNbr, @Param("statCode") Integer statCode);
 }

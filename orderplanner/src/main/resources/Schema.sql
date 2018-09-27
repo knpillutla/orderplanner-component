@@ -11,6 +11,7 @@ CREATE TABLE ORDERS
 	PACKAGE_NBR character varying(50),
     ORDER_NBR character varying(50),
     STAT_CODE  integer DEFAULT 0,
+    ROUTING_STAT_CODE integer DEFAULT 0,
     ORDER_DTTM timestamp not null, 
     SHIP_BY_DTTM timestamp not null,
     EXPECTED_DELIVERY_DTTM timestamp not null,

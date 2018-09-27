@@ -21,6 +21,7 @@ import com.example.order.dto.events.OrderCreationFailedEvent;
 import com.example.order.dto.events.OrderLineAllocationFailedEvent;
 import com.example.order.dto.events.OrderPlannedEvent;
 import com.example.order.dto.events.OrderUpdateFailedEvent;
+import com.example.order.dto.events.SmallStoreOrderPlannedEvent;
 import com.example.order.dto.requests.OrderCreationRequestDTO;
 import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
 import com.example.order.dto.requests.OrderLineStatusUpdateRequestDTO;
@@ -45,6 +46,18 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	OrderDTOConverter orderDTOConverter;
 
+	public enum OrderRoutingStatus {
+		CREATED(0), ERROR(290), COMPLETED(190);
+		OrderRoutingStatus(Integer statCode) {
+			this.statCode = statCode;
+		}
+
+		private Integer statCode;
+
+		public Integer getStatCode() {
+			return statCode;
+		}
+	}
 	public enum OrderStatus {
 		CREATED(100), READY(110), RELEASED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PACKED(150), SHIPPED(160),
 		SHORTED(170), CANCELLED(199);
@@ -103,10 +116,12 @@ public class OrderServiceImpl implements OrderService {
 		OrderDTO orderResponseDTO = null;
 		try {
 			Order order = orderDTOConverter.getOrderEntity(orderCreationRequestDTO);
+			order.setStatCode(OrderStatus.CREATED.getStatCode());
+			order.setRoutingStatCode(OrderRoutingStatus.CREATED.getStatCode());
 			Order savedOrderObj = orderDAO.save(order);
 			orderResponseDTO = orderDTOConverter.getOrderDTO(savedOrderObj);
 			eventPublisher.publish(new OrderCreatedEvent(orderResponseDTO));
-			this.startOrderFulfillment(order.getOrderNbr(), savedOrderObj, savedOrderObj.getUpdatedBy());
+			//this.startOrderFulfillment(order.getOrderNbr(), savedOrderObj, savedOrderObj.getUpdatedBy());
 		} catch (Exception ex) {
 			log.error("Created Order Error:" + ex.getMessage(), ex);
 			eventPublisher.publish(
@@ -217,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
 			if(numOfOrders==0) {
 				numOfOrders = 10;
 			}
-			
+/*			
 			String orderSelectionOption = orderFulfillmentReq.getOrderSelectionOption();
 			if(orderSelectionOption.equalsIgnoreCase("byAreaZoneAisle")) {
 				
@@ -226,13 +241,17 @@ public class OrderServiceImpl implements OrderService {
 			if(orderSelectionOption.equalsIgnoreCase("deliveryType")) {
 				
 			}
-			log.info("No options selected, using num of orders to fetch from DB" + numOfOrders);
-			List<Order> orderEntityList = orderDAO.findByBusNameAndLocnNbrOrderByOrderId(orderFulfillmentReq.getBusName(), orderFulfillmentReq.getLocnNbr());
+*/			log.info("No options selected, using num of orders to fetch from DB" + numOfOrders);
+			List<Order> orderEntityList = orderDAO.findByBusNameAndLocnNbrAndStatCodeOrderByOrderId(orderFulfillmentReq.getBusName(), orderFulfillmentReq.getLocnNbr(), OrderStatus.CREATED.getStatCode());
 			log.info("Retreived " + orderEntityList.size() + "from db");
 			OrderDTO orderDTO;
 			for(Order orderEntity:orderEntityList) {
 				try {
+					if(orderFulfillmentReq.isSmallStoreMode()) {
+						orderDTO = startOrderFulfillmentForSmallStore(batchNbr, orderEntity, userId);
+					}else {
 					orderDTO = startOrderFulfillment(batchNbr, orderEntity, userId);
+					}
 					orderDTOList.add(orderDTO);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -258,4 +277,27 @@ public class OrderServiceImpl implements OrderService {
 		return orderDTO;
 	}
 	
+	@Transactional
+	public OrderDTO startOrderFulfillmentForSmallStore(String batchNbr, Order orderEntity, String userId) throws Exception{
+		orderEntity.setStatCode(OrderStatus.PACKED.getStatCode());
+		orderEntity.setBatchNbr(batchNbr);
+		orderEntity.setUpdatedDttm(new java.util.Date());
+		orderEntity.setUpdatedBy(userId);
+		orderEntity = orderDAO.save(orderEntity);
+		OrderDTO  orderDTO = orderDTOConverter.getOrderDTO(orderEntity);
+		eventPublisher.publish(new SmallStoreOrderPlannedEvent(orderDTO));
+		return orderDTO;
+	}
+
+	@Override
+	@Transactional
+	public OrderDTO updateRoutingCompleted(String busName, Integer locnNbr, Long orderId) throws Exception {
+		Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderId(busName, locnNbr, orderId);
+		orderEntity.setRoutingStatCode(OrderRoutingStatus.COMPLETED.getStatCode());
+		orderEntity.setStatCode(OrderStatus.SHIPPED.getStatCode());
+		orderDAO.save(orderEntity);
+		OrderDTO  orderDTO = orderDTOConverter.getOrderDTO(orderEntity);
+		//eventPublisher.publish(new SmallStoreOrderPlannedEvent(orderDTO));
+		return orderDTO;
+	}
 }

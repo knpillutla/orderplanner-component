@@ -15,4 +15,5 @@ public interface OrderService {
 	public OrderDTO updateOrder(OrderUpdateRequestDTO orderUpdRequest) throws Exception;
 	public OrderDTO updateOrderLineStatusToReserved(OrderLineStatusUpdateRequestDTO orderStatusUpdReq) throws Exception;
 	public OrderFulfillmentResponseDTO startOrderFulfillment(OrderFulfillmentRequestDTO orderFulfillmentReq);
+	OrderDTO updateRoutingCompleted(String busName, Integer locnNbr, Long orderId) throws Exception;
 }

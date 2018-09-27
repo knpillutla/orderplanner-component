@@ -67,6 +67,9 @@ public class Order  implements Serializable{
 	@Column(name="STAT_CODE")
 	Integer statCode;
 
+	@Column(name="ROUTING_STAT_CODE")
+	Integer routingStatCode;
+
 	@Column(name="ORDER_DTTM")
 	Date orderDttm;
 
