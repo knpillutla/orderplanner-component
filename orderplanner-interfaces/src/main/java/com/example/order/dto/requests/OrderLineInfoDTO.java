@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @AllArgsConstructor
-public class OrderLineStatusUpdateRequestDTO {
+public class OrderLineInfoDTO {
 	Long id;
 	Long orderId;
 	Integer orderLineNbr;
@@ -25,5 +25,4 @@ public class OrderLineStatusUpdateRequestDTO {
 	String itemBrcd;
 	String busUnit;
 	Integer qty;
-	Integer newStatus;
 }

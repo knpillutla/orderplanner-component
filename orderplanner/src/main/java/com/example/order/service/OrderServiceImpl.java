@@ -19,13 +19,15 @@ import com.example.order.dto.events.OrderAllocatedEvent;
 import com.example.order.dto.events.OrderCreatedEvent;
 import com.example.order.dto.events.OrderCreationFailedEvent;
 import com.example.order.dto.events.OrderLineAllocationFailedEvent;
+import com.example.order.dto.events.OrderPackedEvent;
 import com.example.order.dto.events.OrderPickedEvent;
 import com.example.order.dto.events.OrderPlannedEvent;
+import com.example.order.dto.events.OrderShippedEvent;
 import com.example.order.dto.events.OrderUpdateFailedEvent;
 import com.example.order.dto.events.SmallStoreOrderPlannedEvent;
 import com.example.order.dto.requests.OrderCreationRequestDTO;
 import com.example.order.dto.requests.OrderFulfillmentRequestDTO;
-import com.example.order.dto.requests.OrderLineStatusUpdateRequestDTO;
+import com.example.order.dto.requests.OrderLineInfoDTO;
 import com.example.order.dto.requests.OrderUpdateRequestDTO;
 import com.example.order.dto.responses.OrderDTO;
 import com.example.order.dto.responses.OrderFulfillmentResponseDTO;
@@ -60,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 	}
 	public enum OrderStatus {
-		CREATED(100), READY(110), RELEASED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PARTIALLY_PICKED(141), PACKED(150), SHIPPED(160),
+		CREATED(100), READY(110), RELEASED(120), ALLOCATED(130), PARTIALLY_ALLOCATED(131), PICKED(140), PARTIALLY_PICKED(141), PACKED(150), PARTIALLY_PACKED(151), SHIPPED(160),
 		SHORTED(170), CANCELLED(199);
 		OrderStatus(Integer statCode) {
 			this.statCode = statCode;
@@ -139,7 +141,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public OrderDTO updateOrderLineStatusToReserved(OrderLineStatusUpdateRequestDTO orderLineStatusUpdReq)
+	@Transactional
+	public OrderDTO updateOrderLineStatusToReserved(OrderLineInfoDTO orderLineStatusUpdReq)
 			throws Exception {
 		OrderDTO orderResponseDTO = null;
 		try {
@@ -303,13 +306,14 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public OrderDTO updateOrderLineStatusToPicked(OrderLineStatusUpdateRequestDTO orderLineStatusUpdReq)
+	@Transactional
+	public OrderDTO updateOrderLineStatusToPicked(OrderLineInfoDTO orderLineInfo)
 			throws Exception {
 		OrderDTO orderResponseDTO = null;
 		try {
-			Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderNbr(orderLineStatusUpdReq.getBusName(),
-					orderLineStatusUpdReq.getLocnNbr(), orderLineStatusUpdReq.getOrderNbr());
-			OrderLine orderLine = this.getOrderLine(orderEntity, orderLineStatusUpdReq.getId());
+			Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderId(orderLineInfo.getBusName(),
+					orderLineInfo.getLocnNbr(), orderLineInfo.getOrderId());
+			OrderLine orderLine = this.getOrderLine(orderEntity, orderLineInfo.getId());
 			orderLine.setStatCode(OrderLineStatus.PICKED.getStatCode());
 			orderEntity.setStatCode(OrderStatus.PARTIALLY_PICKED.getStatCode());
 			orderEntity = orderDAO.save(orderEntity);
@@ -322,12 +326,56 @@ public class OrderServiceImpl implements OrderService {
 				eventPublisher.publish(new OrderPickedEvent(orderDTOConverter.getOrderDTO(orderEntity)));
 			}
 		} catch (Exception ex) {
-			log.error("Order Line Allocation Failed Error:" + ex.getMessage(), ex);
-			eventPublisher.publish(new OrderLineAllocationFailedEvent(orderLineStatusUpdReq,
-					"Order Line Allocation Failed Error:" + ex.getMessage()));
+			log.error("updateOrderLineStatusToPicked Failed Error:" + ex.getMessage(), ex);
+			eventPublisher.publish(new OrderLineAllocationFailedEvent(orderLineInfo,
+					"updateOrderLineStatusToPicked Failed Error:" + ex.getMessage()));
 			throw ex;
 		}
 		return orderResponseDTO;
 
+	}
+
+	@Override
+	@Transactional
+	public OrderDTO updateOrderLineStatusToPacked(OrderLineInfoDTO orderLineInfo)
+			throws Exception {
+		OrderDTO orderResponseDTO = null;
+		try {
+			Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderId(orderLineInfo.getBusName(),
+					orderLineInfo.getLocnNbr(), orderLineInfo.getOrderId());
+			OrderLine orderLine = this.getOrderLine(orderEntity, orderLineInfo.getId());
+			orderLine.setStatCode(OrderLineStatus.PACKED.getStatCode());
+			orderEntity.setStatCode(OrderStatus.PARTIALLY_PACKED.getStatCode());
+			orderEntity = orderDAO.save(orderEntity);
+			
+			boolean isEntireOrderPicked = areAllOrderLinesSameStatus(orderEntity, OrderLineStatus.PACKED.getStatCode());
+
+			if (isEntireOrderPicked) {
+				orderEntity.setStatCode(OrderStatus.PACKED.getStatCode());
+				orderEntity = orderDAO.save(orderEntity);
+				eventPublisher.publish(new OrderPackedEvent(orderDTOConverter.getOrderDTO(orderEntity)));
+			}
+		} catch (Exception ex) {
+			log.error("updateOrderLineStatusToPacked Failed Error:" + ex.getMessage(), ex);
+			eventPublisher.publish(new OrderLineAllocationFailedEvent(orderLineInfo,
+					"updateOrderLineStatusToPacked Failed Error:" + ex.getMessage()));
+			throw ex;
+		}
+		return orderResponseDTO;
+
+	}
+
+	@Override
+	@Transactional
+	public OrderDTO updateOrderStatusToShipped(String busName, Integer locnNbr, Long orderId, String shipCarrier, String shipService, String trackingNbr) {
+		Order orderEntity = orderDAO.findByBusNameAndLocnNbrAndOrderId(busName,locnNbr, orderId);
+		orderEntity.setStatCode(OrderStatus.SHIPPED.getStatCode());
+		orderEntity.setShipCarrier(shipCarrier);
+		orderEntity.setShipService(shipService);
+		orderEntity.setTrackingNbr(trackingNbr);
+		orderEntity = orderDAO.save(orderEntity);
+		OrderDTO orderDTO = orderDTOConverter.getOrderDTO(orderEntity);
+		eventPublisher.publish(new OrderShippedEvent(orderDTO));
+		return orderDTO;
 	}
 }

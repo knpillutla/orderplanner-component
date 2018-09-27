@@ -121,6 +121,15 @@ public class Order  implements Serializable{
 	@Column(name="DEL_PHONE_NBR")
     String delPhoneNbr;
 	
+	@Column(name="SHIP_CARRIER")
+    String shipCarrier;
+	
+	@Column(name="SHIP_SERVICE")
+    String shipService;
+	
+	@Column(name="TRACKING_NBR")
+    String trackingNbr;
+
 	@Column(name="SOURCE")
 	String source;
 

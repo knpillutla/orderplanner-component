@@ -57,7 +57,9 @@ public class OrderDTO  extends BaseDTO implements Serializable{
     String delCountry;
     String delZipcode;
     String delPhoneNbr;
-	
+	String shipCarrier;
+	String shipService;
+	String trackingNbr;
 	List<OrderLineDTO> orderLines = new ArrayList<>();
 	
 

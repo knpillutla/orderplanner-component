@@ -1,6 +1,6 @@
 package com.example.order.dto.events;
 
-import com.example.order.dto.requests.OrderLineStatusUpdateRequestDTO;
+import com.example.order.dto.requests.OrderLineInfoDTO;
 import com.example.order.dto.responses.OrderDTO;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class OrderLineAllocationFailedEvent extends ExceptionEvent{
-	public OrderLineStatusUpdateRequestDTO orderLineStatusUpdateRequestDTO;
+	public OrderLineInfoDTO orderLineStatusUpdateRequestDTO;
 	private static String EVENT_NAME = "OrderUpdateFailedEvent";
-	public OrderLineAllocationFailedEvent(OrderLineStatusUpdateRequestDTO req, String errorMsg) {
+	public OrderLineAllocationFailedEvent(OrderLineInfoDTO req, String errorMsg) {
 		super(EVENT_NAME, errorMsg);
 		this.orderLineStatusUpdateRequestDTO = req;
 		this.addHeader("eventName", getEventName());

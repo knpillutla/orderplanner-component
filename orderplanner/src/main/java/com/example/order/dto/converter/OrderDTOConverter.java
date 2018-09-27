@@ -35,7 +35,7 @@ public class OrderDTOConverter {
 				orderEntity.getDelMiddleName(), orderEntity.getDelAddr1(), orderEntity.getDelAddr2(),
 				orderEntity.getDelAddr3(), orderEntity.getDelCity(), orderEntity.getDelState(),
 				orderEntity.getDelCountry(), orderEntity.getDelZipcode(), orderEntity.getDelPhoneNbr(),
-				orderLineDTOList);
+				orderEntity.getShipCarrier(), orderEntity.getShipService(), orderEntity.getTrackingNbr(), orderLineDTOList);
 		return orderDTO;
 	}
 

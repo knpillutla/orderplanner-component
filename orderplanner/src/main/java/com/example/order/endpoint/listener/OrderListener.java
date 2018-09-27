@@ -8,13 +8,16 @@ import com.example.inventory.dto.events.InventoryAllocatedEvent;
 import com.example.order.dto.converter.CustomerOrderDTOConverter;
 import com.example.order.dto.converter.OrderLineStatusUpdateDTOConverter;
 import com.example.order.dto.events.CustomerOrderCreatedEvent;
-import com.example.order.dto.requests.OrderLineStatusUpdateRequestDTO;
+import com.example.order.dto.requests.OrderLineInfoDTO;
 import com.example.order.dto.responses.OrderDTO;
 import com.example.order.service.OrderService;
 import com.example.order.service.OrderServiceImpl.OrderLineStatus;
 import com.example.order.streams.OrderStreams;
+import com.example.packing.dto.events.PackConfirmationEvent;
 import com.example.picking.dto.events.PickConfirmationEvent;
+import com.example.shipping.dto.events.ShipConfirmationEvent;
 import com.example.shipping.dto.events.ShipRoutingCompletedEvent;
+import com.example.shipping.dto.responses.ShipDTO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,7 +52,7 @@ public class OrderListener {
 		long startTime = System.currentTimeMillis();
 		try {
 			orderService.updateOrderLineStatusToReserved(
-					OrderLineStatusUpdateDTOConverter.getOrderLineStatusUpdateDTO(inventoryAllocatedEvent));
+					OrderLineStatusUpdateDTOConverter.getOrderLineInfoDTO(inventoryAllocatedEvent));
 			long endTime = System.currentTimeMillis();
 			log.info("Completed InventoryAllocatedEvent for: " + inventoryAllocatedEvent + ": at :"
 					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs");
@@ -103,12 +106,12 @@ public class OrderListener {
 	}
 	
 	@StreamListener(target = OrderStreams.PICK_OUTPUT, condition = "headers['eventName']=='PickConfirmationEvent'")
-	public void handleShipRoutingCompletedEventEvent(PickConfirmationEvent pickConfirmationEvent) {
+	public void handlePickConfirmationEvent(PickConfirmationEvent pickConfirmationEvent) {
 		log.info("Received PickConfirmationEvent for: {}" + ": at :" + new java.util.Date(),
 				pickConfirmationEvent);
 		long startTime = System.currentTimeMillis();
 		try {
-			OrderLineStatusUpdateRequestDTO req = new OrderLineStatusUpdateRequestDTO();
+			OrderLineInfoDTO req = new OrderLineInfoDTO();
 			req.setBusName(pickConfirmationEvent.getPickDTO().getBusName());
 			req.setLocnNbr(pickConfirmationEvent.getPickDTO().getLocnNbr());
 			req.setCompany(pickConfirmationEvent.getPickDTO().getCompany());
@@ -117,8 +120,8 @@ public class OrderListener {
 			req.setOrderId(pickConfirmationEvent.getPickDTO().getOrderId());
 			req.setOrderNbr(pickConfirmationEvent.getPickDTO().getOrderNbr());
 			req.setOrderLineNbr(pickConfirmationEvent.getPickDTO().getOrderLineNbr());
-			req.setNewStatus(OrderLineStatus.PICKED.getStatCode());
-			OrderDTO orderDTO = orderService.updateOrderLineStatusToReserved(req);
+			req.setId(pickConfirmationEvent.getPickDTO().getOrderLineId());
+			OrderDTO orderDTO = orderService.updateOrderLineStatusToPicked(req);
 			log.info("output of PickConfirmationEvent event:" + orderDTO);
 			long endTime = System.currentTimeMillis();
 			log.info("Completed PickConfirmationEvent for: " + pickConfirmationEvent + ": at :"
@@ -129,5 +132,55 @@ public class OrderListener {
 			log.error("Error Completing PickConfirmationEvent for: " + pickConfirmationEvent + ": at :"
 					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs", e);
 		}
+	}
+	
+	@StreamListener(target = OrderStreams.PACK_OUTPUT, condition = "headers['eventName']=='PackConfirmationEvent'")
+	public void handlePackConfirmationEventEvent(PackConfirmationEvent packConfirmationEvent) {
+		log.info("Received PackConfirmationEvent for: {}" + ": at :" + new java.util.Date(),
+				packConfirmationEvent);
+		long startTime = System.currentTimeMillis();
+		try {
+			OrderLineInfoDTO req = new OrderLineInfoDTO();
+			req.setBusName(packConfirmationEvent.getPackDTO().getBusName());
+			req.setLocnNbr(packConfirmationEvent.getPackDTO().getLocnNbr());
+			req.setCompany(packConfirmationEvent.getPackDTO().getCompany());
+			req.setDivision(packConfirmationEvent.getPackDTO().getDivision());
+			req.setBusUnit(packConfirmationEvent.getPackDTO().getBusUnit());
+			req.setOrderId(packConfirmationEvent.getPackDTO().getOrderId());
+			req.setOrderNbr(packConfirmationEvent.getPackDTO().getOrderNbr());
+			req.setOrderLineNbr(packConfirmationEvent.getPackDTO().getOrderLineNbr());
+			req.setId(packConfirmationEvent.getPackDTO().getOrderLineId());
+			OrderDTO orderDTO = orderService.updateOrderLineStatusToPacked(req);
+			log.info("output of PackConfirmationEvent event:" + orderDTO);
+			long endTime = System.currentTimeMillis();
+			log.info("Completed PackConfirmationEvent for: " + packConfirmationEvent + ": at :"
+					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs");
+		} catch (Exception e) {
+			e.printStackTrace();
+			long endTime = System.currentTimeMillis();
+			log.error("Error Completing PackConfirmationEvent for: " + packConfirmationEvent + ": at :"
+					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs", e);
+		}
+	}
+
+	@StreamListener(target = OrderStreams.SHIP_OUTPUT, condition = "headers['eventName']=='ShipConfirmationEvent'")
+	public void handleShipConfirmationEvent(ShipConfirmationEvent shipConfirmationEvent) {
+		log.info("Received ShipConfirmationEvent for: {}" + ": at :" + new java.util.Date(),
+				shipConfirmationEvent);
+		long startTime = System.currentTimeMillis();
+		try {
+			ShipDTO shipDTO = shipConfirmationEvent.getShipDTO();
+			OrderDTO orderDTO = orderService.updateOrderStatusToShipped(shipDTO.getBusName(), shipDTO.getLocnNbr(), shipDTO.getOrderId(), shipDTO.getShipCarrier(), shipDTO.getShipCarrierService(), shipDTO.getTrackingNbr());
+			log.info("output of ShipConfirmationEvent event:" + orderDTO);
+			long endTime = System.currentTimeMillis();
+			log.info("Completed ShipConfirmationEvent for: " + shipConfirmationEvent + ": at :"
+					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs");
+		} catch (Exception e) {
+			e.printStackTrace();
+			long endTime = System.currentTimeMillis();
+			log.error("Error Completing ShipConfirmationEvent for: " + shipConfirmationEvent + ": at :"
+					+ new java.util.Date() + " : total time:" + (endTime - startTime) / 1000.00 + " secs", e);
+		}
 	}	
+	
 }
